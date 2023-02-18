@@ -13,7 +13,7 @@ IMG_SIZE = (1400, 1060)
 X_BOUND = IMG_SIZE[0]
 Y_BOUND = IMG_SIZE[1]
 LINE_WIDTH = 2
-offset_x = 600
+offset_x = 900
 offset_y = Y_BOUND/2+10
 scale = 1
 
@@ -27,8 +27,6 @@ radius = 200
 points_in_semi_circle = 100
 
 hallway_steepness = .8
-door_bottom_x = -300
-
 
 def close_path(f):
     f.write('" fill="none" stroke="{}" stroke-width="{}" />\n'.format(LINE_COLOR, LINE_WIDTH))
@@ -39,15 +37,17 @@ def start_path(f, x, y):
 def add_point(f, x, y):
     f.write(' L {},{}'.format(x, y))
 
-def arch(radius, hallway_steepness, door_bottom_x, offset_y = offset_y, i = 1, y_drift_rate = 0, connect_bottom = False):
+def arch(radius, hallway_steepness, arch_height,
+    offset_y = offset_y, x_offset = 0, i = 1, y_drift_rate = 0,
+    connect_bottom = False):
     theta = np.linspace(0, np.pi, points_in_semi_circle)
 
     semi_x = np.sin(theta)*(radius - i*1.2) - i + 100 - .5*i
     semi_y = np.cos(theta)*(radius - i*1.2) - i*y_drift_rate
 
     # add points for the bottom of the door
-    semi_x[0] = i*hallway_steepness + door_bottom_x
-    semi_x[-1] = i*hallway_steepness + door_bottom_x
+    semi_x[0] = i*hallway_steepness - arch_height
+    semi_x[-1] = i*hallway_steepness - arch_height
 
     zipped_coords = zip(semi_x + offset_x, semi_y + offset_y)
     coords = [(x,y) for x,y in zipped_coords]
@@ -62,10 +62,11 @@ def translate(v, x = 5, y = 0):
 def scale(v, s = .5):
     return(.5*v)
 
-def door(offset_y, y_drift_rate = 1):
+def door(offset_y, x_offset = 0, y_drift_rate = 1, door_height = 400):
     paths = []
     for i in logs:
-        paths.append(arch(radius, hallway_steepness, door_bottom_x, offset_y, i, y_drift_rate))
+        paths.append(arch(radius, hallway_steepness,
+            door_height, offset_y, x_offset, i, y_drift_rate))
 
     # last doors
     last_door = Polygon(paths[-1])
@@ -79,23 +80,13 @@ def door(offset_y, y_drift_rate = 1):
         shifted_door = intersection(shifted_door, last_door)
         #shifted_door = [p for p in intersection(shifted_door, last_door).coords if not last_door.contains(p)]
         paths.append(shifted_door.boundary)
-    # hall_turn_increment = 4
-    # for j in range(10):
-    #     i = logs[-1]
-    #     # Generate points along a semicircle
-    #     theta = np.linspace(0, np.pi, points_in_semi_circle)
-    #     xs = scale*(np.sin(theta)*(radius - i*1.2) - i + 100 - .5*i) + offset_x
-    #     ys = scale*(np.cos(theta)*(radius - i*1.2) - i + hall_turn_increment*j) + offset_y
-    #     xs[-1] = i*hallway_steepness + door_bottom_x + offset_x + 1
-    #     path = LineString([(x,y) for x,y in zip(xs,ys)]) #if last_door.contains(Point(x,y))])
-    #     if len(path.coords) > 0:
-    #         paths.append(path)
     return(paths)
 
 
 paths = []
 paths = paths + door(Y_BOUND/2) + door(Y_BOUND*3/2, -1) + door(Y_BOUND, 0)
-paths.append(arch(800, hallway_steepness, door_bottom_x, offset_y = 1050, connect_bottom = True))
+paths.append(arch(800, hallway_steepness, 800,
+    offset_y = 1050, connect_bottom = True))
 
 f = open("door2.svg", "w")
 f.write('<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="{}" height="{}">\n'.format(IMG_SIZE[0], IMG_SIZE[1]))

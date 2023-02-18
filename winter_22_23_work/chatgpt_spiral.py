@@ -1,7 +1,9 @@
 import math
 
 # Image size (pixels)
-IMG_SIZE = (800, 800)
+IMG_SIZE = (1350, 1060)
+X_BOUND = IMG_SIZE[0]
+Y_BOUND = IMG_SIZE[1]
 
 # The number of turns in the spiral
 TURNS = 20

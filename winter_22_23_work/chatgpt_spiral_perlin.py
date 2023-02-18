@@ -1,12 +1,13 @@
 import math
 import vnoise
 noise = vnoise.Noise()
+noise.seed(6)
 
 noise_d = 300
-noise_mult = 300
+noise_mult = 350
 
 # Image size (pixels)
-IMG_SIZE = (1000, 1000)
+IMG_SIZE = (1350, 1060)
 
 # The number of turns in the spiral
 TURNS = 80
